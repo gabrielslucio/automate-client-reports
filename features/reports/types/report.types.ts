@@ -2,7 +2,7 @@ export type RawCsvRow = Record<string, string>;
 
 export type ReportRow = {
   date: string;
-  campaign?: string;
+  campaign: string;
   revenue: number;
   cost: number;
   conversions: number;
