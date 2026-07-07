@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Papa from "papaparse";
 import { Upload } from "lucide-react";
-import { buttonStyles, cardStyles, textStyles } from "@/styles/variants";
+import { buttonStyles, cardStyles, feedbackStyles, textStyles } from "@/styles/variants";
+import { cn } from "@/lib/utils";
 import { normalizeCsvRows } from "../lib/normalization";
 import { RawCsvRow, ReportRow } from "../types/report.types";
 import { reportCopy } from "../constants/report-copy";
@@ -19,19 +20,23 @@ type CsvUploaderProps = {
 
 export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  function resetInput() {
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }
 
+  function processFile(file: File) {
     setError(null);
-
-    if (!file) return;
 
     const fileValidation = validateUploadedFile(file);
 
     if (!fileValidation.isValid) {
       setError(fileValidation.error);
-      event.target.value = "";
+      resetInput();
       return;
     }
 
@@ -45,7 +50,7 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
 
         if (!headersValidation.isValid) {
           setError(headersValidation.error);
-          event.target.value = "";
+          resetInput();
           return;
         }
 
@@ -55,7 +60,7 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
 
         if (!rowsValidation.isValid) {
           setError(rowsValidation.error);
-          event.target.value = "";
+          resetInput();
           return;
         }
 
@@ -63,19 +68,71 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
       },
       error: () => {
         setError("Não foi possível ler o ficheiro CSV.");
-        event.target.value = "";
+        resetInput();
       },
     });
   }
 
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    processFile(file);
+  }
+
+  function handleDragEnter(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.currentTarget.contains(event.relatedTarget as Node)) {
+      return;
+    }
+
+    setIsDragging(false);
+  }
+
+  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    const file = event.dataTransfer.files?.[0];
+
+    if (!file) return;
+
+    processFile(file);
+  }
+
   return (
-    <div className={cardStyles.dashed}>
+    <div
+      className={cn(cardStyles.dashed, isDragging && cardStyles.dashedActive)}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      role="button"
+      tabIndex={0}
+      aria-label="Área para carregar ficheiro CSV"
+    >
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
         <Upload className="h-6 w-6 text-slate-600" />
       </div>
 
       <h2 className={`text-xl ${textStyles.h3}`}>
-        {reportCopy.uploader.title}
+        {isDragging ? reportCopy.uploader.dragging : reportCopy.uploader.title}
       </h2>
 
       <p className={`mt-2 ${textStyles.muted}`}>
@@ -86,6 +143,7 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
         {reportCopy.uploader.button}
 
         <input
+          ref={inputRef}
           type="file"
           accept=".csv,text/csv"
           className="hidden"
@@ -93,12 +151,9 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
         />
       </label>
 
-      {error ? (
-        <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
-          {error}
-        </p>
-      ) : null}
+      <p className={feedbackStyles.hint}>{reportCopy.uploader.hint}</p>
+
+      {error ? <p className={feedbackStyles.error}>{error}</p> : null}
     </div>
   );
 }
-``

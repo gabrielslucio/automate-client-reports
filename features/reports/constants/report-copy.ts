@@ -1,8 +1,11 @@
 export const reportCopy = {
   uploader: {
     title: "Carrega um ficheiro CSV",
-    description: "Usa colunas como date, campaign, revenue, cost e conversions.",
+    description:
+      "Arrasta e larga o ficheiro nesta área ou clica no botão para selecionar manualmente.",
+    hint: "Formatos aceites: .csv até 2MB",
     button: "Escolher ficheiro",
+    dragging: "Larga o ficheiro para gerar o relatório",
   },
 
   dashboard: {

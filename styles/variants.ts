@@ -8,8 +8,11 @@ export const cardStyles = {
   base: "rounded-2xl bg-white shadow-sm ring-1 ring-slate-200",
   padded: "rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200",
   dashed:
-    "rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm",
+    "rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm transition-colors",
+  dashedActive:
+    "border-slate-900 bg-slate-50 ring-2 ring-slate-900/10",
 };
+
 
 export const textStyles = {
   eyebrow:
@@ -36,4 +39,11 @@ export const chartStyles = {
   primaryStroke: "#0f172a",
   secondaryFill: "#64748b",
   primaryFill: "#0f172a",
+};
+
+
+export const feedbackStyles = {
+  error:
+    "mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200",
+  hint: "mt-3 text-xs text-slate-400",
 };
